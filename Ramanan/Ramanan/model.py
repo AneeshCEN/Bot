@@ -7,8 +7,9 @@ import aiml
 import dill
 from .models import RequestCache
 from Ramanan.models import UserCache
-brain_file_medical = "C:/Users/ANEESH/workspace/get_api/get_api/bankbot.brn"
- 
+brain_file_medical = "/home/aneesh/git/Ramanan/Ramanan/Ramanan/standard.brn"
+from textblob import TextBlob
+from config import errors
  
 def create_cache(CACHE_ID):
     import base64
@@ -30,14 +31,23 @@ def create_cache(CACHE_ID):
   
 def generate_reply(question, kernel, cache_list):
     response = question
-    kernel_reply = kernel.respond(str(question['messageText']))
-    print kernel_reply
-#     if "Sorry, I didn't get you.." in kernel_reply:
-#         response = call_api(question)
-#         return response
-#     else:
-    response['entities'] = []
+
+    txt_obj = TextBlob(question['messageText'])
+ 
+    try:
+        language_detected = txt_obj.detect_language()
+    except:
+        language_detected = 'en'
+     
+    if language_detected != 'en':
+        try:
+            question['messageText'] = str(TextBlob(question['messageText']).translate(to = 'en'))
+        except:
+            question['messageText'] = 'asas'
+    
+    kernel_reply = kernel.respond(question['messageText'])
+    malayalam_translated =  str(TextBlob(kernel_reply).translate(to = 'ml'))
     response['messageText'] = []
-    response['messageText'].append(kernel_reply)
+    response['messageText'].append(malayalam_translated)
     return response
     
